@@ -1,65 +1,74 @@
 # PolyStrat — Polymarket Strategy Platform
 
-A full-stack web application for backtesting, evaluating, and monitoring trading strategies on [Polymarket](https://polymarket.com) prediction markets.
-
-![Stack](https://img.shields.io/badge/FastAPI-Backend-green) ![Stack](https://img.shields.io/badge/Next.js_14-Frontend-blue) ![Stack](https://img.shields.io/badge/SQLite-Database-orange)
+A full-stack platform for backtesting trading strategies, analyzing trader behavior, and exploring prediction markets on [Polymarket](https://polymarket.com).
 
 ## Features
 
-### 📊 Strategy Builder
-- Create and edit trading strategies with Python code
-- Built-in templates: Moving Average Crossover, Mean Reversion, Momentum Breakout
-- Configurable parameters (JSON)
-
-### 🔬 Backtesting Engine
-- Fetch historical price data from Polymarket CLOB API
-- Sandboxed strategy execution
-- Calculate PnL, Sharpe ratio, max drawdown, win rate, ROI
-- Equity curve and trade log visualization
-
-### 🔍 Trader Analyzer
-- Analyze any Polymarket trader by their address
-- Performance metrics: PnL, win rate, Sharpe ratio, volume
-- **Strategy Detection**: automatically identify trading patterns (momentum, mean reversion, diversified, concentrated, early mover)
-- Position sizing and trading frequency analysis
-- Leaderboard and trader comparison
-- Track favorite traders
-
-### 🌐 Market Explorer
-- Browse live Polymarket markets via Gamma API
-- Filter by volume, liquidity
-- One-click backtest from market explorer
-
-### 💼 Portfolio Dashboard
-- Aggregated performance across all strategies
-- Strategy comparison equity curves
-- Best/worst performing strategies
+- **Strategy Builder** — Create custom Python-based trading strategies or use built-in templates (Moving Average Crossover, Mean Reversion, Momentum Breakout)
+- **Backtesting Engine** — Run strategies against historical Polymarket price data with detailed equity curves, trade logs, and performance metrics
+- **Trader Analysis** — Analyze any Polymarket trader by wallet address:
+  - Full trade history and positions
+  - Performance metrics (PnL, Sharpe ratio, win rate, max drawdown)
+  - Strategy pattern detection (momentum, mean reversion, trend following, etc.)
+  - Position sizing and timing analysis
+- **Market Explorer** — Browse live Polymarket markets with prices, volume, and liquidity
+- **Portfolio Dashboard** — Aggregated view of all backtests and strategy performance
+- **Leaderboard** — Top Polymarket traders ranked by performance
 
 ## Tech Stack
 
-| Layer | Technology |
-|-------|-----------|
-| Backend | Python FastAPI, SQLAlchemy, httpx |
-| Frontend | Next.js 14, TypeScript, Tailwind CSS |
-| Database | SQLite (async via aiosqlite) |
-| Charts | Recharts |
-| APIs | Polymarket CLOB, Gamma, Data APIs (no key required) |
+| Layer    | Technology                          |
+|----------|-------------------------------------|
+| Backend  | Python, FastAPI, SQLAlchemy, httpx  |
+| Frontend | Next.js 14, React 18, TypeScript   |
+| Styling  | Tailwind CSS                        |
+| Charts   | Recharts                            |
+| Database | SQLite (async via aiosqlite)        |
+| APIs     | Polymarket CLOB, Gamma, Data APIs   |
 
-## Quick Start
+## Project Structure
 
-### Backend
+```
+polymarket-strategies/
+├── backend/
+│   ├── app/
+│   │   ├── api/routes/       # FastAPI route handlers
+│   │   ├── core/             # Business logic (backtester, polymarket client, trader analyzer)
+│   │   ├── db/               # Database setup
+│   │   ├── models/           # SQLAlchemy models
+│   │   ├── schemas/          # Pydantic schemas
+│   │   └── main.py           # FastAPI app entry
+│   ├── requirements.txt
+│   └── run.py
+├── frontend/
+│   ├── app/                  # Next.js pages (App Router)
+│   ├── components/           # React components
+│   ├── lib/                  # API client, types, utilities
+│   ├── package.json
+│   └── next.config.js
+├── docker-compose.yml
+└── README.md
+```
+
+## Getting Started
+
+### Prerequisites
+
+- Python 3.11+
+- Node.js 18+
+- npm or yarn
+
+### Backend Setup
 
 ```bash
 cd backend
-python -m venv venv
-source venv/bin/activate  # or `venv\Scripts\activate` on Windows
 pip install -r requirements.txt
 python run.py
 ```
 
-Backend starts at `http://localhost:8000`. API docs at `http://localhost:8000/docs`.
+The API server starts at `http://localhost:8000`. API docs available at `http://localhost:8000/docs`.
 
-### Frontend
+### Frontend Setup
 
 ```bash
 cd frontend
@@ -67,9 +76,9 @@ npm install
 npm run dev
 ```
 
-Frontend starts at `http://localhost:3000`. It proxies `/api/*` to the backend.
+The frontend starts at `http://localhost:3000` and proxies API requests to the backend.
 
-### Docker Compose
+### Docker (both services)
 
 ```bash
 docker-compose up --build
@@ -87,87 +96,50 @@ docker-compose up --build
 
 ### Backtests
 - `POST /api/backtests/run` — Run a backtest
-- `GET /api/backtests/` — List backtests
-- `GET /api/backtests/{id}` — Get backtest details
+- `GET /api/backtests/` — List backtest results
+- `GET /api/backtests/{id}` — Get backtest detail
 
 ### Markets
-- `GET /api/markets/events` — List Polymarket events
+- `GET /api/markets/events` — List prediction events
 - `GET /api/markets/markets` — List markets
-- `GET /api/markets/price/{token_id}` — Current price
-- `GET /api/markets/orderbook/{token_id}` — Orderbook
-- `GET /api/markets/prices-history/{token_id}` — Price history
+- `GET /api/markets/prices-history/{token_id}` — Historical prices
+- `GET /api/markets/orderbook/{token_id}` — Order book
 
 ### Traders
-- `GET /api/traders/{address}/profile` — Trader overview + metrics
-- `GET /api/traders/{address}/trades` — Paginated trade history
-- `GET /api/traders/{address}/performance` — Equity curve + metrics
+- `GET /api/traders/{address}/profile` — Trader profile
+- `GET /api/traders/{address}/trades` — Trade history
+- `GET /api/traders/{address}/performance` — Performance metrics & equity curve
 - `GET /api/traders/{address}/strategy` — Detected strategy patterns
 - `GET /api/traders/leaderboard` — Top traders
-- `GET /api/traders/compare?addresses[]=...` — Compare traders
-- `POST /api/traders/track` — Track a trader
-- `GET /api/traders/tracked` — List tracked traders
+- `GET /api/traders/compare?addresses=addr1,addr2` — Compare traders
 
 ### Portfolio
 - `GET /api/portfolio/summary` — Aggregated portfolio metrics
 - `GET /api/portfolio/equity-curve` — Combined equity curves
 
-## Strategy Format
+## Strategy Code Format
 
-Strategies are Python functions that return a signal:
+Strategies are Python functions that return a trading signal:
 
 ```python
 def signal(prices, position, params):
     """
     Args:
-        prices: list of historical prices up to current point
-        position: current position size (positive=long, negative=short)
-        params: strategy parameters dict
+        prices: list of historical prices up to current bar
+        position: current position (positive=long, negative=short, 0=flat)
+        params: dict of strategy parameters
 
     Returns:
-        1 (buy), -1 (sell), or 0 (hold)
+        1 = buy, -1 = sell, 0 = hold
     """
-    lookback = params.get('lookback', 20)
-    if len(prices) < lookback:
-        return 0
+    short_ma = sum(prices[-10:]) / 10
+    long_ma = sum(prices[-30:]) / 30
 
-    ma = sum(prices[-lookback:]) / lookback
-    if prices[-1] < ma * 0.95:
-        return 1   # Buy when price is 5% below MA
-    elif prices[-1] > ma * 1.05:
-        return -1  # Sell when price is 5% above MA
+    if short_ma > long_ma:
+        return 1
+    elif short_ma < long_ma:
+        return -1
     return 0
-```
-
-## Project Structure
-
-```
-polymarket-strategies/
-├── backend/
-│   ├── app/
-│   │   ├── main.py                 # FastAPI app
-│   │   ├── core/
-│   │   │   ├── config.py           # Settings
-│   │   │   ├── polymarket.py       # Polymarket API client
-│   │   │   ├── backtester.py       # Backtesting engine
-│   │   │   ├── metrics.py          # Performance metrics
-│   │   │   └── trader_analyzer.py  # Trader analysis engine
-│   │   ├── models/                 # SQLAlchemy models
-│   │   ├── schemas/                # Pydantic schemas
-│   │   ├── api/routes/             # API routes
-│   │   └── db/                     # Database setup
-│   ├── requirements.txt
-│   └── run.py
-├── frontend/
-│   ├── app/                        # Next.js pages
-│   │   ├── strategies/             # Strategy CRUD
-│   │   ├── markets/                # Market explorer
-│   │   ├── traders/                # Trader analysis
-│   │   ├── backtest/               # Backtest details
-│   │   └── portfolio/              # Portfolio dashboard
-│   ├── components/                 # React components
-│   └── lib/                        # API client, types, utils
-├── docker-compose.yml
-└── README.md
 ```
 
 ## License
